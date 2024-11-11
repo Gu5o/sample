@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.spring.board.dao.BoardDAO">
+	<select id="selectBoardCount" parameterType="map" resultType="int">
+		SELECT 
+			COUNT(*)
+		FROM
+			TB_BOARD
+		WHERE
+			1=1
+			AND bo_del_yn = 'N'
+			AND bo_type = #{bo_type}
+	</select>
+	
+	<select id="getBoard" parameterType="map" resultType="boardVO">
+		SELECT 
+			bo_seq_no,
+			bo_type,
+			bo_title,
+			bo_content,
+			bo_writer,
+			bo_writer_name,
+			bo_hit_cnt,
+			bo_open_yn,
+			bo_del_yn,
+			reg_date,
+			reg_user,
+			upd_date,
+			upd_user
+		FROM
+			TB_BOARD
+		WHERE
+			bo_seq_no = #{bo_seq_no}
+	</select>
+	
+	<select id="selectBoardList" parameterType="map" resultType="boardVO">
+		SELECT
+			A.*
+		FROM (
+			SELECT
+				@ROWNUM := @ROWNUM + 1 AS ROWNUM,
+				TB.*
+				FROM (
+				SELECT 
+					bo_seq_no,
+					bo_type,
+					bo_title,
+					bo_content,
+					bo_writer,
+					bo_writer_name,
+					bo_hit_cnt,
+					bo_open_yn,
+					bo_del_yn,
+					reg_date,
+					reg_user,
+					upd_date,
+					upd_user
+				FROM
+					TB_BOARD
+				WHERE
+					1=1
+					AND bo_del_yn = 'N'
+					AND bo_type = #{bo_type}
+										
+			
+			 		<if test="searchWord != null and searchWord != '' ">
+						<if test="searchType == 'title'">
+							AND bo_title LIKE CONCAT ('%', #{searchWord} , '%')
+						</if>
+						<if test="searchType == 'contents'">
+							AND bo_content LIKE CONCAT ('%', #{searchWord} , '%')
+						</if> 
+						<if test="searchType == 'titleAndContent'">
+							AND (bo_title LIKE CONCAT ('%', #{searchWord} , '%')) OR (bo_content LIKE CONCAT ('%', #{searchWord} , '%') )
+						</if>
+						<if test="searchType == 'writer'">
+							AND bo_writer_name LIKE CONCAT ('%', #{searchWord} , '%')
+						</if>
+					</if>
+					
+				ORDER BY bo_seq_no DESC
+				) TB,
+				( SELECT @ROWNUM := 0) R
+			) A WHERE A.ROWNUM BETWEEN #{startRow} AND #{endRow}
+	
+	</select>
+	
+	<update id="updateHitCnt" parameterType="int">
+		UPDATE TB_BOARD 
+		SET
+			bo_hit_cnt = bo_hit_cnt + 1
+		WHERE
+			bo_seq_no = #{bo_seq_no}
+	</update>
+	
+	
+   	<insert id="insertBoard" parameterType="boardVO" useGeneratedKeys="true" keyProperty="bo_seq_no">
+   	<selectKey keyProperty="bo_seq_no" resultType="int" order="BEFORE">
+   		select
+   			case count(*) when 0 then 1 else max(bo_seq_no) + 1 end bo_seq_no
+   		from tb_board	
+   	</selectKey>
+   
+      INSERT INTO TB_BOARD(
+      	   bo_seq_no
+         , bo_type
+         , bo_title
+         , bo_content
+         , bo_writer
+         , bo_writer_name
+         , bo_hit_cnt
+         , bo_open_yn
+         , bo_del_yn
+         , reg_date
+         , reg_user
+      ) VALUES (
+      	   #{bo_seq_no}
+         , #{bo_type}
+         , #{bo_title}
+         , #{bo_content}
+         , #{bo_writer}
+         , #{bo_writer_name}
+         , 0
+         , COALESCE(#{bo_open_yn} , 'N')
+         , 'N'
+         , now()
+         , #{bo_writer}
+      )
+   </insert>
+
+
+	<update id="updateBoard"  parameterType="boardVO">
+		UPDATE tb_board SET
+			bo_title = #{bo_title}
+		,	bo_content = #{bo_content}
+		,	bo_open_yn = #{bo_open_yn}
+		,	upd_date = now()
+		, 	upd_user = #{upd_user}
+		WHERE
+			bo_seq_no = #{bo_seq_no}
+	</update>
+	
+	<update id="deleteBoard"  parameterType="boardVO">
+		UPDATE tb_board SET
+			bo_del_yn = 'Y'
+		,	upd_date = now()
+		, 	upd_user = #{upd_user}
+		WHERE
+			bo_seq_no = #{bo_seq_no}
+	</update>
+	
+	<select id="selectGalleryList" parameterType="map" resultType="boardVO">
+		SELECT
+			A.*
+		FROM (
+			SELECT
+				@ROWNUM := @ROWNUM + 1 AS ROWNUM,
+				TB.*
+				FROM (
+				SELECT 
+					bo_seq_no,
+					bo_type,
+					bo_title,
+					bo_content,
+					bo_writer,
+					bo_writer_name,
+					bo_hit_cnt,
+					bo_open_yn,
+					bo_del_yn,
+					reg_date,
+					reg_user,
+					upd_date,
+					upd_user,
+					(select min(file_seq_no) from tb_file_item where ref_seq_no = bo_seq_no) as fileSeqNo
+				FROM
+					TB_BOARD
+				WHERE
+					1=1
+					AND bo_del_yn = 'N'
+					AND bo_type = #{bo_type}
+				<if test="searchWord != null and searchWord != '' ">
+						<if test="searchType == 'title'">
+							AND bo_title LIKE CONCAT ('%', #{searchWord} , '%')
+						</if>
+						<if test="searchType == 'contents'">
+							AND bo_content LIKE CONCAT ('%', #{searchWord} , '%')
+						</if> 
+						<if test="searchType == 'titleAndContent'">
+							AND (bo_title LIKE CONCAT ('%', #{searchWord} , '%')) OR (bo_content LIKE CONCAT ('%', #{searchWord} , '%') )
+						</if>
+						<if test="searchType == 'writer'">
+							AND bo_writer_name LIKE CONCAT ('%', #{searchWord} , '%')
+						</if>
+					</if>
+					
+				ORDER BY bo_seq_no DESC
+				) TB,
+				( SELECT @ROWNUM := 0) R
+			) A WHERE A.ROWNUM BETWEEN #{startRow} AND #{endRow}
+	</select>
+	
+</mapper>

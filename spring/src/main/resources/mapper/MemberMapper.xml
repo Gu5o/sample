@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.spring.member.dao.MemberDAO">
+	<select id = "selectMemberTest" resultType="memberVO">
+		SELECT MEM_ID,MEM_NAME,MEM_EMAIL FROM TB_MEMBER
+	</select>
+	<select id="selectMemberList" parameterType="map" resultType="memberVO">
+	SELECT
+	A.*
+	FROM (
+		SELECT
+			@ROWNUM := @ROWNUM + 1 AS ROWNUM,
+			TB.*
+			FROM (
+			SELECT
+				mem_seq_no,
+				mem_id,
+				mem_name,
+				mem_pwd,
+				mem_birth,
+				mem_phone,
+				mem_email,
+				mem_zipcode,
+				mem_addr_master,
+				mem_addr_detail,
+				mem_type
+			FROM
+				tb_member WHERE 1=1
+								
+		
+				<if test="searchWord != null and searchWord != '' ">
+					<if test="searchType == 'id'">
+						AND mem_id = #{searchWord}	
+					</if>
+					<if test="searchType == 'name'">
+						AND mem_name LIKE CONCAT ('%', #{searchWord} , '%')
+					</if>
+				</if>
+			ORDER BY mem_seq_no DESC
+			) TB,
+			( SELECT @ROWNUM := 0) R
+		) A WHERE A.ROWNUM BETWEEN #{startRow} AND #{endRow}
+	</select>
+	
+	<select id = "selectMemberCount" parameterType="map" resultType="int">
+		SELECT
+			count(*)
+		FROM
+			tb_member WHERE 1=1
+			<if test="searchWord != null and searchWord != '' ">
+					<if test="searchType == 'id'">
+						AND mem_id = #{searchWord}
+					</if>
+					<if test="searchType == 'name'">
+						AND mem_name LIKE CONCAT ('%', #{searchWord} , '%')
+					</if>
+				</if>
+	</select>
+	
+	<select id="selectMember" parameterType="map" resultType="memberVO">
+  	  SELECT
+   	     mem_seq_no,
+				mem_id,
+				mem_name,
+				mem_pwd,
+				mem_birth,
+				mem_phone,
+				mem_email,
+				mem_zipcode,
+				mem_addr_master,
+				mem_addr_detail,
+				mem_type
+  	  FROM
+  	      tb_member
+   	 WHERE
+   	     1 = 1
+   	     <if test = "memNoBer != null">
+   	     	and mem_seq_no = #{memNoBer}
+   	     </if>
+   	     <if test="mem_id != null and mem_id != ''">
+   	     	and mem_id = #{mem_id}
+   	     </if>
+	</select>
+	
+	<insert id = "insertMember" parameterType= "memberVO">
+		INSERT INTO TB_MEMBER(
+				mem_id,
+				mem_name,
+				mem_pwd,
+				mem_birth,
+				mem_phone,
+				mem_email,
+				mem_zipcode,
+				mem_addr_master,
+				mem_addr_detail
+		) VALUE (
+				#{mem_id},
+				#{mem_name},
+				#{mem_pwd},
+				#{mem_birth},
+				#{mem_phone},
+				#{mem_email},
+				#{mem_zipcode},
+				#{mem_addr_master},
+				#{mem_addr_detail}
+		)
+	</insert>
+	
+	<update id = "updateMember" parameterType="memberVO">
+		UPDATE TB_MEMBER
+		SET
+			mem_name = #{mem_name},
+			mem_pwd =  #{mem_pwd},
+			mem_birth = #{mem_birth},
+			mem_phone = #{mem_phone},
+			mem_email = #{mem_email},
+			mem_zipcode = #{mem_zipcode},
+			mem_addr_master = #{mem_addr_master},
+			mem_addr_detail = #{mem_addr_detail}
+		WHERE mem_seq_no = #{mem_seq_no}
+	</update>
+	
+		<delete id = "deleteMember" parameterType="map">
+		DELETE FROM TB_MEMBER
+		WHERE mem_seq_no = #{mem_seq_no}
+		</delete>
+	
+</mapper>

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.spring.file.dao.FileItemDAO">
+      <!-- FileItemMapper -->
+   <select id = "selectFileItemList" parameterType ="map"  resultType="fileItem">
+      SELECT
+         file_seq_no
+         , ref_seq_no
+         , biz_type
+         , file_path
+         , file_name
+         , file_save_name
+         , file_size
+         , file_fancy_size
+         , file_down_cnt
+         , reg_date
+         , reg_user
+         , upd_date
+         , upd_user	
+      FROM
+         tb_file_item
+      WHERE
+         ref_seq_no = #{ref_seq_no}
+         AND biz_type = #{biz_type}
+   </select>
+   
+   <select id = "selectFileItem" parameterType ="map"  resultType="fileItem">
+         SELECT
+         file_seq_no
+         , ref_seq_no
+         , biz_type
+         , file_path
+         , file_name
+         , file_save_name
+         , file_size
+         , file_fancy_size
+         , file_down_cnt
+         , reg_date
+         , reg_user
+         , upd_date
+         , upd_user
+         , thum_save_name
+      FROM
+         tb_file_item
+      WHERE
+         file_seq_no = #{file_seq_no}
+   </select>
+   
+   <insert id="insertFileItem" parameterType ="fileItem">
+      INSERT INTO tb_file_item(
+         ref_seq_no
+         , biz_type
+         , file_path
+         , file_name
+         , file_save_name
+         , file_size
+         , file_fancy_size
+         , file_down_cnt
+         , reg_date
+         , reg_user
+         , upd_date
+         , upd_user
+         , thum_save_name
+      ) VALUES(
+          #{ref_seq_no}
+         , #{biz_type}
+         , #{file_path}
+         , #{file_name}
+         , #{file_save_name}
+         , #{file_size}
+         , #{file_fancy_size}
+         , #{file_down_cnt}
+         , now()
+         , #{reg_user}
+         , now()
+         , #{upd_user}
+         , #{thum_save_name}
+      )
+   </insert>
+   
+   <delete id="deleteFileItemList" parameterType="map">
+      DELETE 
+      FROM 
+         tb_file_item 
+      WHERE
+         file_seq_no = #{delFileSeq}
+   </delete>
+   
+   
+</mapper>
